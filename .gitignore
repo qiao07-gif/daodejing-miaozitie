@@ -1,0 +1,39 @@
+# ===== 历史版本与备份（不纳入发布仓库）=====
+*备份*.html
+*调试*.html
+*_debug*.html
+*_test*.js
+*_tmp*
+_backup/
+_backup_index*.html
+index_backup_*.html
+index_diag.html
+index_v2*.html
+index_V2*.html
+indexV3.html
+hero-*.html
+step*.html
+*样板*.html
+
+# ===== 方案/评审/临时脚本 =====
+_*方案*.md
+_*评审*.md
+_*check*.cjs
+_*verify*.cjs
+_*scan*.cjs
+_*dao_*.cjs
+_*dao_*.md
+_*dao_*.txt
+*.bak
+
+# ===== 本地数据/原图（不入库）=====
+*.png
+*.json
+?_精美图/
+00-策划讨论.md
+01-道德经81章-带拼音.md
+
+# ===== 系统/编辑器 =====
+.DS_Store
+Thumbs.db
+.workbuddy/

@@ -224,6 +224,10 @@
   /* ★ 2026-08-02 描红页字体放大（橙橙反馈"字体大点、体验好"）：仅限 #step3，不影响其它页面 */
   #step3 .quotebig{font-size:28px;}
   #step3 .muted{font-size:14px;}
+  #step3 .card{ position:relative; }
+  #step3 .s3head{ position:absolute; left:0; right:0; top:2.6rem; pointer-events:none; }
+  #step3 .tracezone{ position:relative; z-index:3; margin:16rem 0 4px; }
+  #step3 .quotebig.long{ font-size:22px; }
   #step3 .mini{font-size:14px; padding:8px 14px;}
   #step3 .btn{font-size:16px; padding:13px 22px;}
   #step3 .tracepy{font-size:16px; height:24px;}
@@ -713,8 +717,10 @@
     <div id="step3" class="hidden">
       <div class="card center">
         <h3 style="justify-content:center;"><span class="dot"></span>✍️ 描红这一章的金句</h3>
-        <div class="quotebig serif" id="s3quote"></div>
-        <p class="muted" id="s3prog">照着红色底字，用手指一笔一笔描。写好一个字会亮金光 ✨</p>
+        <div class="s3head">
+          <div class="quotebig serif" id="s3quote"></div>
+          <p class="muted" id="s3prog">照着红色底字，用手指一笔一笔描。写好一个字会亮金光 ✨</p>
+        </div>
         <div class="tracezone">
           <div class="tracebox" id="s3hw"></div>
           <button class="traceok" id="s3ok" onclick="markDoneManual()">✓ 写好啦</button>
@@ -2429,6 +2435,7 @@ function renderTraceChar(){
 // ★ V7 M14：顶部只显当前段（聚焦），颜色对齐 V6。don=绿/cur=红+放大/todo=深棕。分段描红逻辑保留，段间叮+微光+光标跳转。
 function renderTraceQuote(){
   const q = $("s3quote"); if(!q) return; q.innerHTML = "";
+  q.classList.toggle("long", (traceSentence||"").length >= 40);
   const seg = traceSegs[segIdx] || [0, traceTotal];
   for(let h=seg[0]; h<seg[1]; h++){
     const ch = traceChars[h].ch;

@@ -235,7 +235,7 @@
   .zoomval{font-size:13px; font-weight:600; color:var(--red); min-width:18px; text-align:center;}
   .hwfall{cursor:pointer; color:var(--red); line-height:1; display:flex; align-items:center; justify-content:center; width:100%; height:100%;}
   /* 卡片下载 / 打印 */
-  .cardbtns{display:flex; gap:6px; justify-content:center; margin-top:8px;}
+  .cardbtns{display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:8px;}
   .cardbtns .mini{font-size:11px; padding:4px 8px;}
   .cardbtns .mini.gold{background:linear-gradient(135deg,#e2b83a,#d4a72c); color:#fff; border:none; font-weight:600;}
   .share-preview{margin-top:10px; border-top:2px dashed var(--gold2); padding-top:10px;}
@@ -2993,10 +2993,103 @@ function buildCollect(){
   revealToGold();
 }
 
+/* ===== 试验版：输出卡 12 主题（4色×3纹）🎲循环换色 ===== */
+const CARD_SCHEMES = [
+  // —— 无纹 ×7 境（纹优先排序：每点🎲必换色相）——
+  {name:"道之体·素宣·无纹", realm:"道之体", quote:"有物混成，先天地生", quoteSrc:"廿五章", bg1:"#f6f1e7", bg2:"#ece4d2", col:"#b08d57", colD:"#8a6a3a", ink:"#3a2f25", ink2:"#7a6a52", pat:"none",   patColor:"#b08d57", patAlpha:0},
+  {name:"水之德·青碧·无纹", realm:"水之德", quote:"上善若水，水善利万物而不争", quoteSrc:"八章",   bg1:"#06313a", bg2:"#0a4a52", col:"#5fd0d8", colD:"#2f9aa3", ink:"#e6fbfb", ink2:"#9fdfe2", pat:"none",   patColor:"#5fd0d8", patAlpha:0},
+  {name:"风之行·月白·无纹", realm:"风之行", quote:"飘风不终朝，骤雨不终日",     quoteSrc:"廿三章", bg1:"#e8eef2", bg2:"#cdd6e0", col:"#7d8aa0", colD:"#5a6678", ink:"#2e3744", ink2:"#5a6678", pat:"none",   patColor:"#7d8aa0", patAlpha:0},
+  {name:"山之定·玄岳·无纹", realm:"山之定", quote:"重为轻根，静为躁君",       quoteSrc:"廿六章", bg1:"#1a1a1a", bg2:"#33332f", col:"#d9b382", colD:"#b88e5a", ink:"#f0ece4", ink2:"#b8a98f", pat:"none",   patColor:"#d9b382", patAlpha:0},
+  {name:"器之用·陶赭·无纹", realm:"器之用", quote:"埏埴以为器，当其无，有器之用", quoteSrc:"十一章", bg1:"#e8d5c0", bg2:"#c9a88a", col:"#9c6b3f", colD:"#7a4f2a", ink:"#3a2a18", ink2:"#7a5a3a", pat:"none",   patColor:"#9c6b3f", patAlpha:0},
+  {name:"谷之虚·浅霭·无纹", realm:"谷之虚", quote:"上德若谷",               quoteSrc:"四一章", bg1:"#f0ece4", bg2:"#ddd6c8", col:"#9a8f7a", colD:"#7a7060", ink:"#4a4234", ink2:"#7a7060", pat:"none",   patColor:"#9a8f7a", patAlpha:0},
+  {name:"渊之深·深澜·无纹", realm:"渊之深", quote:"渊兮似万物之宗",         quoteSrc:"四章",   bg1:"#0e1b3a", bg2:"#16284f", col:"#6ea8ff", colD:"#3d6fd0", ink:"#e8eefc", ink2:"#9db8e8", pat:"none",   patColor:"#6ea8ff", patAlpha:0},
+  // —— 云水纹 ×7 境 ——
+  {name:"道之体·素宣·云水纹", realm:"道之体", quote:"有物混成，先天地生", quoteSrc:"廿五章", bg1:"#f6f1e7", bg2:"#ece4d2", col:"#b08d57", colD:"#8a6a3a", ink:"#3a2f25", ink2:"#7a6a52", pat:"cloud",  patColor:"#b08d57", patAlpha:0.15},
+  {name:"水之德·青碧·云水纹", realm:"水之德", quote:"上善若水，水善利万物而不争", quoteSrc:"八章",   bg1:"#06313a", bg2:"#0a4a52", col:"#5fd0d8", colD:"#2f9aa3", ink:"#e6fbfb", ink2:"#9fdfe2", pat:"cloud",  patColor:"#5fd0d8", patAlpha:0.13},
+  {name:"风之行·月白·云水纹", realm:"风之行", quote:"飘风不终朝，骤雨不终日",     quoteSrc:"廿三章", bg1:"#e8eef2", bg2:"#cdd6e0", col:"#7d8aa0", colD:"#5a6678", ink:"#2e3744", ink2:"#5a6678", pat:"cloud",  patColor:"#7d8aa0", patAlpha:0.15},
+  {name:"山之定·玄岳·云水纹", realm:"山之定", quote:"重为轻根，静为躁君",       quoteSrc:"廿六章", bg1:"#1a1a1a", bg2:"#33332f", col:"#d9b382", colD:"#b88e5a", ink:"#f0ece4", ink2:"#b8a98f", pat:"cloud",  patColor:"#d9b382", patAlpha:0.13},
+  {name:"器之用·陶赭·云水纹", realm:"器之用", quote:"埏埴以为器，当其无，有器之用", quoteSrc:"十一章", bg1:"#e8d5c0", bg2:"#c9a88a", col:"#9c6b3f", colD:"#7a4f2a", ink:"#3a2a18", ink2:"#7a5a3a", pat:"cloud",  patColor:"#9c6b3f", patAlpha:0.15},
+  {name:"谷之虚·浅霭·云水纹", realm:"谷之虚", quote:"上德若谷",               quoteSrc:"四一章", bg1:"#f0ece4", bg2:"#ddd6c8", col:"#9a8f7a", colD:"#7a7060", ink:"#4a4234", ink2:"#7a7060", pat:"cloud",  patColor:"#9a8f7a", patAlpha:0.15},
+  {name:"渊之深·深澜·云水纹", realm:"渊之深", quote:"渊兮似万物之宗",         quoteSrc:"四章",   bg1:"#0e1b3a", bg2:"#16284f", col:"#6ea8ff", colD:"#3d6fd0", ink:"#e8eefc", ink2:"#9db8e8", pat:"cloud",  patColor:"#6ea8ff", patAlpha:0.13},
+  // —— 莲花纹 ×7 境 ——
+  {name:"道之体·素宣·莲花纹", realm:"道之体", quote:"有物混成，先天地生", quoteSrc:"廿五章", bg1:"#f6f1e7", bg2:"#ece4d2", col:"#b08d57", colD:"#8a6a3a", ink:"#3a2f25", ink2:"#7a6a52", pat:"lotus",  patColor:"#b08d57", patAlpha:0.15},
+  {name:"水之德·青碧·莲花纹", realm:"水之德", quote:"上善若水，水善利万物而不争", quoteSrc:"八章",   bg1:"#06313a", bg2:"#0a4a52", col:"#5fd0d8", colD:"#2f9aa3", ink:"#e6fbfb", ink2:"#9fdfe2", pat:"lotus",  patColor:"#5fd0d8", patAlpha:0.13},
+  {name:"风之行·月白·莲花纹", realm:"风之行", quote:"飘风不终朝，骤雨不终日",     quoteSrc:"廿三章", bg1:"#e8eef2", bg2:"#cdd6e0", col:"#7d8aa0", colD:"#5a6678", ink:"#2e3744", ink2:"#5a6678", pat:"lotus",  patColor:"#7d8aa0", patAlpha:0.15},
+  {name:"山之定·玄岳·莲花纹", realm:"山之定", quote:"重为轻根，静为躁君",       quoteSrc:"廿六章", bg1:"#1a1a1a", bg2:"#33332f", col:"#d9b382", colD:"#b88e5a", ink:"#f0ece4", ink2:"#b8a98f", pat:"lotus",  patColor:"#d9b382", patAlpha:0.13},
+  {name:"器之用·陶赭·莲花纹", realm:"器之用", quote:"埏埴以为器，当其无，有器之用", quoteSrc:"十一章", bg1:"#e8d5c0", bg2:"#c9a88a", col:"#9c6b3f", colD:"#7a4f2a", ink:"#3a2a18", ink2:"#7a5a3a", pat:"lotus",  patColor:"#9c6b3f", patAlpha:0.15},
+  {name:"谷之虚·浅霭·莲花纹", realm:"谷之虚", quote:"上德若谷",               quoteSrc:"四一章", bg1:"#f0ece4", bg2:"#ddd6c8", col:"#9a8f7a", colD:"#7a7060", ink:"#4a4234", ink2:"#7a7060", pat:"lotus",  patColor:"#9a8f7a", patAlpha:0.15},
+  {name:"渊之深·深澜·莲花纹", realm:"渊之深", quote:"渊兮似万物之宗",         quoteSrc:"四章",   bg1:"#0e1b3a", bg2:"#16284f", col:"#6ea8ff", colD:"#3d6fd0", ink:"#e8eefc", ink2:"#9db8e8", pat:"lotus",  patColor:"#6ea8ff", patAlpha:0.13}
+];
+let cardSchemeOverride = 0;
+function SCH(){ return CARD_SCHEMES[cardSchemeOverride]; }
+// ★ 七境融合：花纹按底色明暗自适应（改 V3 一刀切 0.09 的"花纹不可见"致命伤）
+function relLum(hex){
+  const h=(hex||"#ffffff").replace('#','');
+  const r=parseInt(h.substr(0,2),16)/255, g=parseInt(h.substr(2,2),16)/255, b=parseInt(h.substr(4,2),16)/255;
+  const f=c=>c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4);
+  return 0.2126*f(r)+0.7152*f(g)+0.0722*f(b);
+}
+function shadeHex(hex, amt){
+  const h=(hex||"#000000").replace('#','');
+  let r=parseInt(h.substr(0,2),16), g=parseInt(h.substr(2,2),16), b=parseInt(h.substr(4,2),16);
+  if(amt>=0){ r=r+(255-r)*amt; g=g+(255-g)*amt; b=b+(255-b)*amt; }
+  else { r=r*(1+amt); g=g*(1+amt); b=b*(1+amt); }
+  const c=v=>('0'+Math.max(0,Math.min(255,Math.round(v))).toString(16)).slice(-2);
+  return '#'+c(r)+c(g)+c(b);
+}
+function patTuning(sc){
+  const lum = relLum(sc.bg1);
+  if(lum > 0.55){ return { pc: shadeHex(sc.col, -0.5), pa: 0.15 }; }   // 浅底 → 深纹高显
+  return { pc: shadeHex(sc.col, 0.4), pa: 0.13 };                       // 深底 → 浅纹
+}
+// ★ 七境融合：输出卡底部"境名 + 道德经章句"footer（对比色用 SC.ink/ink2，明暗底都可读）
+function realmFooter(SC, cx, y, rSize, qSize){
+  rSize = rSize||40; qSize = qSize||27;
+  return `<text x="${cx}" y="${y}" text-anchor="middle" font-size="${rSize}" fill="${SC.ink}" font-family="'KaiTi','STKaiti',serif" letter-spacing="6">${SC.realm}</text>`
+       + `<text x="${cx}" y="${y+(qSize+16)}" text-anchor="middle" font-size="${qSize}" fill="${SC.ink2}" font-family="'KaiTi',serif" letter-spacing="2">${SC.quote}（${SC.quoteSrc}）</text>`;
+}
+function schemePatternDef(sc, s){
+  if(!sc.pat || sc.pat==='none') return "";
+  const _pt = patTuning(sc), _pc = _pt.pc;
+  const id = "pat"+s+"_"+cardSchemeOverride;
+  if(sc.pat==='cloud'){
+    return '<pattern id="'+id+'" width="140" height="140" patternUnits="userSpaceOnUse">'
+      +'<path d="M0 70 Q35 35 70 70 T140 70" fill="none" stroke="'+_pc+'" stroke-width="3" opacity=".5"/>'
+      +'<path d="M0 105 Q35 70 70 105 T140 105" fill="none" stroke="'+_pc+'" stroke-width="2" opacity=".4"/>'
+      +'<path d="M0 35 Q35 0 70 35 T140 35" fill="none" stroke="'+_pc+'" stroke-width="2" opacity=".3"/>'
+      +'</pattern>';
+  }
+  return '<pattern id="'+id+'" width="150" height="150" patternUnits="userSpaceOnUse">'
+    +'<g fill="none" stroke="'+_pc+'" stroke-width="2" opacity=".5">'
+    +'<path d="M75 35 C55 60 55 95 75 120 C95 95 95 60 75 35Z"/>'
+    +'<path d="M40 60 C28 78 32 102 50 112"/>'
+    +'<path d="M110 60 C122 78 118 102 100 112"/>'
+    +'<path d="M75 118 L75 138"/>'
+    +'</g></pattern>';
+}
+function schemePatternRect(sc, s){
+  if(!sc.pat || sc.pat==='none') return "";
+  return '<rect width="1080" height="1920" fill="url(#pat'+s+'_'+cardSchemeOverride+')" opacity="'+patTuning(sc).pa+'"/>';
+}
+function cycleCardScheme(){
+  cardSchemeOverride = (cardSchemeOverride+1) % CARD_SCHEMES.length;
+  rerenderCards();
+  if(typeof toast==='function') toast("🎲 底色：" + SCH().name);
+}
+function rerenderCards(){
+  try{ buildGallery(); }catch(e){}
+  const drill = document.getElementById("galDrill");
+  if(drill && !drill.classList.contains("hidden")){
+    const n = Number(drill.dataset.pin);
+    if(n){ const p = DATA.pins.find(x=>x.pin===n); const nm = p? p.name.replace(/第.+$/,"") : "";
+      drill.innerHTML = '<div class="drillbar"><button class="mini" onclick="closeDrill()">← 返回地图</button><b style="font-size:14px; color:var(--gold);">第'+n+'章 · '+nm+' 的全部卡片</b></div><div class="drillgrid">'+pinCardsHTML(n)+'</div>';
+      drill.querySelectorAll(".cardbtns").forEach(function(b){ var x=document.createElement("button"); x.className="mini"; x.textContent="🎲 换底色"; x.onclick=cycleCardScheme; b.appendChild(x); });
+    }
+  }
+}
 /* ---------- 收藏画廊 ---------- */
-function showGallery(){
-  // ★ V6.6 默认进入：段位墙 + 集卡地图；隐藏钻取与"看全部"
-  $("galDrill").classList.add("hidden");
+function buildGallery(){
+  // 仅填充画廊卡片区（不切视图、不关钻取弹窗）
   $("galAll").classList.add("hidden");
   renderTeacherWall();
   renderMap();
@@ -3111,8 +3204,9 @@ function showGallery(){
       gR4.appendChild(c);
     });
   }
-  showView("gallery");
+  document.querySelectorAll("#view-gallery .cardbtns").forEach(function(b){ var x=document.createElement("button"); x.className="mini"; x.textContent="🎲 换底色"; x.onclick=cycleCardScheme; b.appendChild(x); });
 }
+function showGallery(){ const d=$("galDrill"); if(d) d.classList.add("hidden"); buildGallery(); showView("gallery"); }
 
 /* =================== V6.6 小老师段位系统 / 集卡地图 / 钻取 / 教学季 =================== */
 // 段位配置（集中可调：橙橙可改 min 阈值 / 名称 / 图标）★ V7 0809m：打平后段位=累计描完章数，名称去"小老师"
@@ -3185,12 +3279,14 @@ function renderMap(){
 function openGalleryPin(n){
   const p = DATA.pins.find(x=>x.pin===n); if(!p) return;
   const drill = $("galDrill"); if(!drill) return;
+  drill.dataset.pin = n;
   drill.classList.remove("hidden");
   drill.innerHTML = `<div class="drillbar">
       <button class="mini" onclick="closeDrill()">← 返回地图</button>
       <b style="font-size:14px; color:var(--gold);">第${p.pin}章 · ${esc(p.name.replace(/第.+$/,""))} 的全部卡片</b>
     </div>
     <div class="drillgrid">${pinCardsHTML(n)}</div>`;
+  document.querySelectorAll("#galDrill .cardbtns").forEach(function(b){ var x=document.createElement("button"); x.className="mini"; x.textContent="🎲 换底色"; x.onclick=cycleCardScheme; b.appendChild(x); });
   drill.scrollIntoView({behavior:"smooth", block:"start"});
 }
 function closeDrill(){ const d=$("galDrill"); if(d){ d.classList.add("hidden"); d.innerHTML=""; } }
@@ -3391,8 +3487,9 @@ function ghostQuoteBlock(quote, cx, midY, sz, gap, boxW, boxPad, opt){
 function cardSVG(p, suf){
   const W=1080, H=1920;
   const nick = (S.nick||"小书童").replace(/[<>&]/g,"");
-  const col = S.color||"#c9a227";
-  const colD = CARDC[col]||"#a8842e";
+  const SC = SCH();
+  const col = SC.col;
+  const colD = SC.colD;
   const dstr = today();
   const doneN = Object.keys(S.done).length;
   // ★ V7 0809h：下载/打印不再传 "cur"，统一走 collectedQuote，与网页收集页显示严格一致（修「显示是一句、下载变敷座而坐」错位 bug）
@@ -3408,35 +3505,37 @@ function cardSVG(p, suf){
   const BOXPAD = ghostP1 ? 40 : 0;       // 白框上下内边距
   const BOXW = ghostP1 ? 340 : 0;        // 白框宽（橙橙选 340）
   // ★ V7：金句卡统一为竖排多列金骨架（与网页收集卡同一套视觉语言）；长句自动折列 + 自适应缩放不重叠；去拼音
-  const gb = ghostQuoteBlock(quote, W/2, 1000, SZ, GAP, BOXW, BOXPAD, {grid:true, perCol:5, maxW:1000, maxH:1250, maxScale:0.91});   // ★ V7 0809l：短句生效字号帽≈155px
+  const gb = ghostQuoteBlock(quote, W/2, 1000, SZ, GAP, BOXW, BOXPAD, {grid:true, perCol:5, maxW:1000, maxH:1120, maxScale:0.91});   // ★ 七境融合：缩金句区留白给底部境名+章句
   const charsRaw = gb.svg;
   let _gbscale = 1;
-  if(gb.frameW && gb.frameH){ _gbscale = Math.min(0.91, 1000/gb.frameW, 1250/gb.frameH); }   // ★ V7 0809l：短句生效字号帽≈155px，长句由高度自然限
+  if(gb.frameW && gb.frameH){ _gbscale = Math.min(0.91, 1000/gb.frameW, 1120/gb.frameH); }   // ★ 七境融合：缩金句区留白，长句由高度自然限
   const chars = _gbscale<1 ? `<g transform="translate(${W/2},1000) scale(${_gbscale.toFixed(4)}) translate(${-W/2},${-1000})">${charsRaw}</g>` : charsRaw;
   let y = 1000 + (gb.frameH/2)*_gbscale + 70;   // 拼音定位（卡片去拼音，此值仅占位）
   const pinyin = "";   // ★ V7：收藏卡去拼音，金骨架做绝对主角
   const corners = [[70,70],[1010,70],[70,1850],[1010,1850]].map(([x,y])=>
     `<circle cx="${x}" cy="${y}" r="14" fill="none" stroke="${col}" stroke-width="3"/>
      <circle cx="${x}" cy="${y}" r="5" fill="${col}"/>`).join("");
-  const seal = (x,y,icon,txt)=>`<g transform="translate(${x},${y})"><rect x="-74" y="-27" width="148" height="54" rx="9" fill="#c9a227" opacity=".08"/><rect x="-71" y="-24" width="142" height="48" rx="7" fill="none" stroke="#c9a227" stroke-width="1.5" opacity=".35"/><text x="-42" y="7" text-anchor="middle" font-size="20">${icon}</text><text x="8" y="8" text-anchor="middle" font-size="18" fill="#a08a68" font-family="'KaiTi',serif">${txt}</text></g>`;   // ★ V7 2026-08-09：复用分享卡同款三印章
+  const seal = (x,y,icon,txt)=>`<g transform="translate(${x},${y})"><rect x="-74" y="-27" width="148" height="54" rx="9" fill="none" stroke="${SC.col}" stroke-width="1.5" opacity=".35"/><text x="-42" y="7" text-anchor="middle" font-size="20">${icon}</text><text x="8" y="8" text-anchor="middle" font-size="18" fill="${SC.ink2}" font-family="'KaiTi',serif">${txt}</text></g>`;   // ★ V7 2026-08-09：复用分享卡同款三印章
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" class="card-svg">
   <defs>
-    <linearGradient id="bg${s}" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fff9e6"/><stop offset="1" stop-color="#f5e3c6"/>
+    <linearGradient id="bg${s}_${cardSchemeOverride}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${SC.bg1}"/><stop offset="1" stop-color="${SC.bg2}"/>
     </linearGradient>
-    <linearGradient id="band${s}" x1="0" y1="0" x2="1" y2="0">
+    <linearGradient id="band${s}_${cardSchemeOverride}" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0" stop-color="${col}"/><stop offset="1" stop-color="${colD}"/>
     </linearGradient>
+    ${schemePatternDef(SC, s)}
   </defs>
-  <rect width="${W}" height="${H}" fill="url(#bg${s})"/>
+  <rect width="${W}" height="${H}" fill="url(#bg${s}_${cardSchemeOverride})"/>
+  ${schemePatternRect(SC, s)}
   <rect x="40" y="40" width="${W-80}" height="${H-80}" rx="40" fill="none" stroke="${col}" stroke-width="5"/>
   <rect x="60" y="60" width="${W-120}" height="${H-120}" rx="28" fill="none" stroke="${colD}" stroke-width="2" stroke-dasharray="12 10" opacity=".55"/>
   ${corners}
   <rect x="0" y="330" width="${W}" height="8" fill="url(#band${s})" opacity=".8"/>
-  <text x="${W/2}" y="200" text-anchor="middle" font-size="56" fill="${colD}" font-family="'KaiTi','STKaiti','SimKai',serif" letter-spacing="14">道德经</text>
-  <text x="${W/2}" y="272" text-anchor="middle" font-size="32" fill="#8a6a45" font-family="'KaiTi','STKaiti','SimKai',serif" letter-spacing="6">描字帖 · 第${p.pin}章 · ${esc(p.name.replace(/第.+$/,""))}</text>
+  <text x="${W/2}" y="200" text-anchor="middle" font-size="56" fill="${SC.ink2}" font-family="'KaiTi','STKaiti','SimKai',serif" letter-spacing="14">道德经</text>
+  <text x="${W/2}" y="272" text-anchor="middle" font-size="32" fill="${SC.ink2}" font-family="'KaiTi','STKaiti','SimKai',serif" letter-spacing="6">描字帖 · 第${p.pin}章 · ${esc(p.name.replace(/第.+$/,""))}</text>
   ${chars}
-  <text x="${W/2}" y="${y}" text-anchor="middle" font-size="30" fill="#8a6a45" font-family="'KaiTi',serif" letter-spacing="2">${pinyin}</text>
+  <text x="${W/2}" y="${y}" text-anchor="middle" font-size="30" fill="${SC.ink2}" font-family="'KaiTi',serif" letter-spacing="2">${pinyin}</text>
   <g transform="rotate(-14 ${W-150} 430)">
     <rect x="${W-230}" y="360" width="160" height="160" rx="20" fill="none" stroke="#b03a2e" stroke-width="6"/>
     <text x="${W-150}" y="442" text-anchor="middle" font-size="40" fill="#b03a2e" font-family="'KaiTi',serif" letter-spacing="4">已通关</text>
@@ -3452,6 +3551,7 @@ function cardSVG(p, suf){
     <text x="0" y="9" text-anchor="middle" font-size="30" fill="#8f2b1f" font-family="'KaiTi',serif" letter-spacing="6">— ${esc(nick)} —</text>
   </g>
   <text x="${W/2}" y="${H-34}" text-anchor="middle" font-size="24" fill="#a08a68" font-family="'KaiTi',serif">${dstr} · 道德经描字帖</text>
+  ${realmFooter(SC, W/2, 1640)}
 </svg>`;
 }
 // V2：角色头像（大头像/小头像共用，viewBox 300 自动缩放）
@@ -3475,8 +3575,9 @@ function roleAvatar(name){ return avatarBig(name||""); }
 function shareCardSVG(p){
   const W=1080, H=1920;
   const nick=(S.nick||"小书童").replace(/[<>&]/g,"");
-  const col=S.color||"#c9a227";
-  const colD=CARDC[col]||"#a8842e";
+  const SC=SCH();
+  const col=SC.col;
+  const colD=SC.colD;
   const dstr=today();
   const days=S.streak.count||0;
   const doneN=Object.keys(S.done).length;
@@ -3498,26 +3599,28 @@ function shareCardSVG(p){
   const chars = _gbscale<1 ? `<g transform="translate(${W/2},${midY}) scale(${_gbscale.toFixed(4)}) translate(${-W/2},${-midY})">${gb.svg}</g>` : gb.svg;
   // ★ V6.6q：成就三项淡金细圈底 + 淡褐字（横排于分隔线与今日一句之间）
   const seal = (x, y, icon, txt)=>`<g transform="translate(${x},${y})">
-      <rect x="-74" y="-27" width="148" height="54" rx="9" fill="#c9a227" opacity=".08"/>
-      <rect x="-71" y="-24" width="142" height="48" rx="7" fill="none" stroke="#c9a227" stroke-width="1.5" opacity=".35"/>
+      <rect x="-74" y="-27" width="148" height="54" rx="9" fill="none" stroke="${SC.col}" stroke-width="1.5" opacity=".35"/>
       <text x="-42" y="7" text-anchor="middle" font-size="20">${icon}</text>
-      <text x="8" y="8" text-anchor="middle" font-size="18" fill="#a08a68" font-family="'KaiTi',serif">${txt}</text>
+      <text x="8" y="8" text-anchor="middle" font-size="18" fill="${SC.ink2}" font-family="'KaiTi',serif">${txt}</text>
     </g>`;
   const dayLine = dayPts>0 ? `今日一句 · ${dstr} · ✨ 今日收获 +${dayPts} 分` : `今日一句 · ${dstr}`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" class="card-svg share-svg">
   <defs>
-    <linearGradient id="sbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fdf8ed"/><stop offset="1" stop-color="#f3e2c6"/></linearGradient>
-    <linearGradient id="sband" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${col}"/><stop offset="1" stop-color="${colD}"/></linearGradient>
-    <radialGradient id="sglow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="${col}" stop-opacity=".14"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></radialGradient>
+    <linearGradient id="sbg_${cardSchemeOverride}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${SC.bg1}"/><stop offset="1" stop-color="${SC.bg2}"/></linearGradient>
+    <linearGradient id="sband_${cardSchemeOverride}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${col}"/><stop offset="1" stop-color="${colD}"/></linearGradient>
+    <radialGradient id="sglow_${cardSchemeOverride}" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="${col}" stop-opacity=".14"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></radialGradient>
+    ${schemePatternDef(SC, "share")}
   </defs>
-  <rect width="${W}" height="${H}" fill="url(#sbg)"/>
+  <rect width="${W}" height="${H}" fill="url(#sbg_${cardSchemeOverride})"/>
+  ${schemePatternRect(SC, "share")}
   <!-- 顶部大面积留白 + 中央光晕 -->
-  <circle cx="${W/2}" cy="${H*0.38}" r="560" fill="url(#sglow)"/>
+  <circle cx="${W/2}" cy="${H*0.38}" r="560" fill="url(#sglow_${cardSchemeOverride})"/>
   <!-- 细线框（更精致，双细线） -->
   <rect x="46" y="46" width="${W-92}" height="${H-92}" rx="26" fill="none" stroke="${col}" stroke-width="3" opacity=".7"/>
   <rect x="62" y="62" width="${W-124}" height="${H-124}" rx="18" fill="none" stroke="${colD}" stroke-width="1" opacity=".4"/>
   <!-- 品牌（小而精致） -->
   <text x="${W/2}" y="180" text-anchor="middle" font-size="40" font-family="'KaiTi','STKaiti','SimKai',serif" letter-spacing="12" fill="${colD}">道德经·描字帖</text>
+  ${realmFooter(SC, W/2, 262)}
   <line x1="${W/2-120}" y1="215" x2="${W/2+120}" y2="215" stroke="${colD}" stroke-width="2" opacity=".5"/>
   <!-- 日签感：当日字体句 -->
   ${chars}
@@ -3527,7 +3630,7 @@ function shareCardSVG(p){
   ${seal(860,1362,"✨",S.points+" 分")}
   <!-- 底部固定区（固定坐标，不随金句长度浮动） -->
   <line x1="200" y1="1330" x2="${W-200}" y2="1330" stroke="${colD}" stroke-width="3" opacity=".5"/>
-  <text x="${W/2}" y="1420" text-anchor="middle" font-size="30" fill="#8a6a45" font-family="'KaiTi',serif" letter-spacing="4">${dayLine}</text>
+  <text x="${W/2}" y="1420" text-anchor="middle" font-size="30" fill="${SC.ink2}" font-family="'KaiTi',serif" letter-spacing="4">${dayLine}</text>
   <!-- 署名（红色印章感） -->
   <g transform="translate(${W/2},1478)">
     <rect x="-130" y="-31" width="260" height="62" rx="10" fill="#b03a2e" opacity=".10"/>
@@ -3535,7 +3638,7 @@ function shareCardSVG(p){
     <text x="0" y="9" text-anchor="middle" font-size="30" fill="#8f2b1f" font-family="'KaiTi',serif" letter-spacing="6">— ${esc(nick)} —</text>
   </g>
   <!-- 二维码体验入口 -->
-  <text x="${W/2}" y="1574" text-anchor="middle" font-size="24" font-family="'KaiTi',serif" letter-spacing="2" fill="#6a5236">扫码 · 一起来当小书童 · 每天一句道德经</text>
+  <text x="${W/2}" y="1574" text-anchor="middle" font-size="24" font-family="'KaiTi',serif" letter-spacing="2" fill="${SC.ink2}">扫码 · 一起来当小书童 · 每天一句道德经</text>
   <rect x="${W/2-150}" y="${H-330}" width="300" height="300" rx="18" fill="#ffffff" stroke="${colD}" stroke-width="3"/>
   <image x="${W/2-105}" y="${H-285}" width="210" height="210" href="data:image/png;base64,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"/>
 </svg>`;
@@ -3584,13 +3687,15 @@ function downloadSVG(svg, fname){
 function wrapCN(s, n){ const out=[]; for(let i=0;i<s.length;i+=n) out.push(s.slice(i,i+n)); return out; }
 function cnLines(s, per, max){ const lines=wrapCN(s||"", per).slice(0,max); if((s||"").length>per*max) lines[max-1]=(lines[max-1]||"").slice(0,-1)+"…"; return lines; }
 function cardShell(inner, s){
-  const col=S.color||"#c9a227"; const colD=CARDC[col]||"#a8842e";
+  const SC=SCH(); const col=SC.col; const colD=SC.colD;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" class="card-svg">
-  <defs><linearGradient id="bg${s}" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#fff9e6"/><stop offset="1" stop-color="#f5e3c6"/></linearGradient>
-  <linearGradient id="band${s}" x1="0" y1="0" x2="1" y2="0">
-    <stop offset="0" stop-color="${col}"/><stop offset="1" stop-color="${colD}"/></linearGradient></defs>
-  <rect width="1080" height="1920" fill="url(#bg${s})"/>
+  <defs><linearGradient id="bg${s}_${cardSchemeOverride}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="${SC.bg1}"/><stop offset="1" stop-color="${SC.bg2}"/></linearGradient>
+  <linearGradient id="band${s}_${cardSchemeOverride}" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="${col}"/><stop offset="1" stop-color="${colD}"/></linearGradient>
+    ${schemePatternDef(SC, s)}</defs>
+  <rect width="1080" height="1920" fill="url(#bg${s}_${cardSchemeOverride})"/>
+  ${schemePatternRect(SC, s)}
   <rect x="40" y="40" width="1000" height="1840" rx="40" fill="none" stroke="${col}" stroke-width="5"/>
   <rect x="60" y="60" width="960" height="1800" rx="28" fill="none" stroke="${colD}" stroke-width="2" stroke-dasharray="12 10" opacity=".55"/>
   ${[[70,70],[1010,70],[70,1850],[1010,1850]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="14" fill="none" stroke="${col}" stroke-width="3"/><circle cx="${x}" cy="${y}" r="5" fill="${col}"/>`).join("")}
@@ -3598,23 +3703,25 @@ function cardShell(inner, s){
   ${inner}
   <rect x="0" y="1670" width="1080" height="250" fill="url(#band${s})" opacity=".12"/>
   <text x="540" y="1762" text-anchor="middle" font-size="44" fill="${colD}" font-family="'KaiTi',serif" letter-spacing="4">「${esc((S.nick||"小行者").replace(/[<>&]/g,""))}」的专属卡片</text>
-  <text x="540" y="1820" text-anchor="middle" font-size="26" fill="#6a5236" font-family="'KaiTi',serif">${today()} · 道德经描字帖</text>
+  <text x="540" y="1820" text-anchor="middle" font-size="26" fill="${SC.ink2}" font-family="'KaiTi',serif">${today()} · 道德经描字帖</text>
 </svg>`;
 }
 // ★ V6.6l：四轮金句卡（金骨架，白框+米字格+金字竖排，复用 cardShell 壳）
 // r: 1/2/3/4；p: 章对象
 function rNQuoteSVG(p, r, suf){
+  const SC=SCH();
   const _tk = "r"+r+"traced";
   const _def = (r===1) ? (p.goldenQuote||"") : ((p.goldenQuotes||[]).find(x=>x.r===r)?.q || p.goldenQuote || "");
   const _traced = (S[_tk] && S[_tk][p.pin]) || "";
   const quote = _traced || _def;   // ★ V7 0809m：优先实际描句，画廊/下载/打印四墙卡跟随（打平后各轮显各句）
   const py = (_traced && _traced!==_def) ? "" : ( (r===1) ? (p.pinyin||"") : ((p.goldenQuotes||[]).find(x=>x.r===r)?.py || p.pinyin || "") );
   const rn = r===1?"初遇":r===2?"发现":r===3?"创造":"小老师";
-  const gb = ghostQuoteBlock(quote, 540, 1000, 170, 200, 340, 40);
+  const gb = ghostQuoteBlock(quote, 540, 1000, 170, 200, 340, 40, {maxH:1120, maxScale:0.91});   // ★ 七境融合：缩金句区留白给footer
   const inner = `
-  <text x="540" y="272" text-anchor="middle" font-size="32" fill="#8a6a45" font-family="'KaiTi',serif" letter-spacing="6">🧿 ${rn}金句卡 · 第${p.pin}章 · ${esc(p.name.replace(/第.+$/,""))}</text>
+  <text x="540" y="272" text-anchor="middle" font-size="32" fill="${SC.ink2}" font-family="'KaiTi',serif" letter-spacing="6">🧿 ${rn}金句卡 · 第${p.pin}章 · ${esc(p.name.replace(/第.+$/,""))}</text>
   ${gb.svg}
-  <text x="540" y="${gb.endY+44}" text-anchor="middle" font-size="30" fill="#8a6a45" font-family="'KaiTi',serif" letter-spacing="2">${esc(py)}</text>`;
+  ${realmFooter(SC, 540, 1620)}
+  <text x="540" y="${gb.endY+44}" text-anchor="middle" font-size="30" fill="${SC.ink2}" font-family="'KaiTi',serif" letter-spacing="2">${esc(py)}</text>`;
   return cardShell(inner, (suf||"q")+r+"_"+p.pin);
 }
 function r2QuoteSVG(p){ return rNQuoteSVG(p,2,"w"); }

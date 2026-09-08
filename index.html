@@ -496,7 +496,7 @@
   .perfect .s{font-size:13px; color:#9a7434; margin-top:4px;}
   /* 积分数字滚动 */
   .stat b.rolling{color:var(--coral); transition:color .3s;}
-  /* 读经进度条 */
+  /* 诵读进度条 */
   .pbar{position:relative; height:16px; border-radius:999px; background:#f3e6cc;
     border:1px solid var(--line); overflow:visible; margin:10px 0 8px;}
   .pfill{position:relative; height:100%; border-radius:999px; width:0;
@@ -600,7 +600,7 @@
 <body>
 <div class="wrap">
   <div class="topbar" id="topbar">
-    <div class="title">道德经描字帖<small>读一章 → 结个缘 → 描一句 → 集卡</small></div>
+    <div class="title">道德经描字帖<small>每天一章，慢慢来</small></div>
     <div class="stats">
       <div class="stat"><b id="stPts">0</b>积分</div>
       <div class="stat"><b id="stDone">0</b>已读</div>
@@ -608,7 +608,7 @@
     </div>
   </div>
   <div class="soundbar">
-    <span class="lbl">写好一笔的声音：</span>
+    <span class="lbl">写对一笔的音效：</span>
     <span class="chip" data-snd="windchime">🔔 风铃</span>
     <span class="chip" data-snd="leaves">🍃 树叶</span>
     <span class="chip" data-snd="drop">💧 水滴</span>
@@ -627,8 +627,8 @@
       <span class="hero-floating" style="left:85%; top:58%; animation-delay:.7s;">🪷</span>
       <div class="hero-scene" id="heroScene"></div>
       <h2 class="serif">道德经描字帖</h2>
-      <p class="sub">和老子一起，把这部五千言，读完、描完</p>
-      <button class="btn full" onclick="goChapters()">📖 开始读经</button>
+      <p class="sub">和老子一起，把五千言变成你的收藏</p>
+      <button class="btn full" onclick="goChapters()">📖 开始诵读</button>
       <button class="btn ghost full" onclick="showGallery()">🎴 我的收藏</button>
     </div>
     <div class="card">
@@ -636,9 +636,9 @@
       <div class="roundsum" id="roundSum"></div>
     </div>
     <div class="card">
-      <h3><span class="dot"></span>🪷 初遇 · 读经进度</h3>
+      <h3><span class="dot"></span>🪷 初遇 · 诵读进度</h3>
       <div class="pbar"><div class="pfill" id="pFill"><span class="pdot">🪷</span></div></div>
-      <p class="ptxt" id="pTxt">还没开始，点「开始读经」出发吧 🚀</p>
+      <p class="ptxt" id="pTxt">还没开始，点「开始诵读」出发吧 🚀</p>
     </div>
     <div class="card">
       <h3><span class="dot"></span>今日任务</h3>
@@ -1188,8 +1188,9 @@ function sparkAtChar(){
   }
 }
 function pinyinAlign(quote, pinyin){
-  // 只对齐汉字；标点跳过
-  const py = (pinyin||"").split(/\s+/).filter(Boolean);
+  // ★ 修复拼音对齐：过滤 py 数组里混入的标点字面串（，。！？；等），只留纯音节
+  const py = (pinyin||"").split(/\s+/).filter(Boolean)
+                .filter(x=>!/[，。！？；：、（）《》「」·…—“”‘’]/.test(x) && /[a-zA-Z]/.test(x));
   let pi = 0; const out = [];
   for(const ch of quote){
     if(/[一-鿿]/.test(ch)){ out.push(py[pi]||""); pi++; } else out.push("");
@@ -1219,7 +1220,7 @@ function buildTaskCard(){
   const gotBonus = !!S.todayBonus;
   let ic, main, btn;
   if(todayN>=3 && gotBonus){
-    ic = "🎉"; main = `<b>今日 3 章达成！</b><br>奖励 +10 分已到账，明天继续读经之旅～`; btn = "";
+    ic = "🎉"; main = `<b>今日 3 章达成！</b><br>奖励 +10 分已到账，明天继续诵读之旅～`; btn = "";
   } else if(todayN>=3){
     ic = "✅"; main = `<b>今天已读 ${todayN}/3 章！</b><br>点按钮领取 <b>+10</b> 额外分`; btn = `<button class="mini" onclick="claimToday()">领取 +10</button>`;
   } else {
@@ -1270,7 +1271,7 @@ function buildAch(celebrate){
   }
   updateProgress(got);
 }
-// 首页读经进度条
+// 首页诵读进度条
 function updateProgress(got){
   const fill = $("pFill"), txt = $("pTxt");
   if(!fill || !txt) return;
@@ -1280,7 +1281,7 @@ function updateProgress(got){
   setTimeout(()=>{ fill.style.width = pct + "%"; }, 60);
   const left = total - n;
   txt.innerHTML = n===0
-    ? "还没开始，点「开始读经」出发吧 🚀"
+    ? "还没开始，点「开始诵读」出发吧 🚀"
     : (left===0
         ? "🎉 八十一章全部读完！你就是<b>通章人</b> 🌟"
         : `已读完 <b>${n}</b> / ${total} 章，还差 <b>${left}</b> 章就通关啦！`);
@@ -2362,9 +2363,10 @@ function buildTrace(p){
   }catch(e){}
   traceChars = [];
   let ci = 0;
-  for(const ch of quote){
+  for(let qi=0; qi<quote.length; qi++){
+    const ch = quote[qi];
     if(!/[一-鿿]/.test(ch)) continue;
-    const py = charPinyin[ci]||""; ci++;
+    const py = charPinyin[qi]||""; ci++;   // ★ 修复：用字符真实下标取字符序数组（pinyinAlign 返回的 out 为字符序）
     const cd = (window.CHAR_DATA && window.CHAR_DATA[ch]);
     // ★ 完成判定：逐笔骨架识别（橙橙指定思路）。
     //   每个字按笔画骨架建模；孩子一笔一划描，命中该字每一笔的骨架就过，少一笔/乱画都不认。
@@ -2821,7 +2823,7 @@ function skipPop(){
 }
 function chestPop(){
   $("pop").innerHTML = `<div class="emo">🧰</div><h2>连胜 7 天 · 宝箱开啦！</h2>
-    <p>连续读经 <b>${S.streak.count} 天</b>！<br>宝箱奖励 <b>+50 分</b> 🎁<br>继续坚持，每 7 天还能再开一次～</p>
+    <p>连续诵读 <b>${S.streak.count} 天</b>！<br>宝箱奖励 <b>+50 分</b> 🎁<br>继续坚持，每 7 天还能再开一次～</p>
     <button class="btn gold full" onclick="closePop()">收下宝箱！</button>`;
   $("mask").classList.add("show");
 }
@@ -4162,5 +4164,10 @@ function sceneSVG(pin){ return sceneOf(pin); }
 function sceneSVG(pin){ return sceneOf(pin); }
 
 </script>
+
+<!-- 公安备案标识：鲁公网安备37150202001150号。上线前须确认 daodejing.miaozitie.top 已在公安备案主体覆盖范围内（DNS 已 A→CVM 且 IP 与备案一致）。当前为本地待启用状态，未 push 不违规。 -->
+<div class="beian-footer" style="text-align:center;padding:14px 8px;font-size:13px;color:#8a8a8a;font-family:'KaiTi',serif;">
+  <a href="https://beian.mps.gov.cn/#/query/webSearch?code=37150202001150" rel="noreferrer" target="_blank" style="color:#8a8a8a;text-decoration:none;">鲁公网安备37150202001150号</a>
+</div>
 </body>
 </html>
